@@ -1,0 +1,4 @@
+[{<<"counter">>,
+  {git,"git@github.com:plux/counter-erlang.git",
+       {ref,"74ff22b8008ae773181cace677fc2c5b90d66ebe"}},
+  0}].
