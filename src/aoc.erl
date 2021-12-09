@@ -65,6 +65,8 @@ draw_grid(Grid, {X1, Y1}, {X2,Y2}) ->
                                 case maps:get({X, Y}, Grid, ".") of
                                     S when is_list(S) ->
                                         io:format("~s", [S]);
+                                    C when $0 =< C, C =< $9 ->
+                                        io:format("~s", [[C]]);
                                     Other ->
                                         io:format("~p", [Other])
                                 end
