@@ -17,18 +17,14 @@ part2(Grid) ->
 lowpoints(Grid) ->
     lists:filter(
       fun(Pos) ->
-              Neighbors = [maps:get(N, Grid, $9) || N <- neighbors(Pos)],
+              Neighbors = [maps:get(N, Grid, $9) || N <- aoc:neighbors_4(Pos)],
               maps:get(Pos, Grid) < lists:min(Neighbors)
       end, maps:keys(Grid)).
-
-neighbors({PosX, PosY}) ->
-    Offsets = [{-1,0}, {1,0}, {0,-1}, {0,1}],
-    [{X0 + PosX,  Y0 + PosY} || {X0, Y0} <- Offsets].
 
 basin([], _Grid, Acc) ->
     gb_sets:size(Acc);
 basin([Pos | Rest], Grid, Acc) ->
-    Neighbors = [N || N <- neighbors(Pos),
+    Neighbors = [N || N <- aoc:neighbors_4(Pos),
                       not gb_sets:is_member(N, Acc),
                       maps:get(N, Grid, $9) =/= $9],
     basin(Neighbors ++ Rest, Grid, gb_sets:add(Pos, Acc)).

@@ -1,6 +1,7 @@
 -module(aoc).
 
 -compile([export_all]).
+-include("aoc.hrl").
 
 -type str() :: list().
 
@@ -82,6 +83,14 @@ enumerate(L) ->
 cartesian([H|T]) -> [[A|B] || A <- H, B <- cartesian(T)];
 cartesian([])    -> [[]].
 
+
+neighbors_4({PosX, PosY}) ->
+    Offsets = [?north, ?east, ?south, ?west],
+    [{X0 + PosX,  Y0 + PosY} || {X0, Y0} <- Offsets].
+
+neighbors_8({PosX, PosY}) ->
+    Offsets = [?north, ?ne, ?east, ?se, ?south, ?sw, ?west, ?nw],
+    [{X0 + PosX,  Y0 + PosY} || {X0, Y0} <- Offsets].
 
 -spec transpose([list()]) -> [list()].
 transpose([])     -> [];
