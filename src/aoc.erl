@@ -61,21 +61,8 @@ draw_grid(Grid) ->
               {lists:min(Xs), lists:min(Ys)},
               {lists:max(Xs), lists:max(Ys)}).
 
-draw_grid(Grid, {X1, Y1}, {X2,Y2}) ->
-    lists:foreach(
-      fun(Y) ->
-              lists:map(fun(X) ->
-                                case maps:get({X, Y}, Grid, ".") of
-                                    S when is_list(S) ->
-                                        io:format("~s", [S]);
-                                    C when $0 =< C, C =< $9 ->
-                                        io:format("~s", [[C]]);
-                                    Other ->
-                                        io:format("~p", [Other])
-                                end
-                            end, lists:seq(X1, X2)),
-              io:format("\n")
-      end, lists:seq(Y1,Y2)).
+draw_grid(Grid, From, To) ->
+    io:format("~s", [grid_to_string(Grid, From, To)]).
 
 -spec enumerate([X]) -> [{integer(), X}].
 enumerate(L) ->
@@ -98,6 +85,52 @@ neighbors_8({PosX, PosY}) ->
 transpose([])     -> [];
 transpose([[]|_]) -> [];
 transpose(L)      -> [[H || [H|_] <- L]|transpose([T || [_|T] <- L])].
+
+ocr(L) when is_list(L) ->
+    ocr(maps:from_list([{{X, Y}, "#"} || {X, Y} <- L]));
+ocr(Grid) ->
+    try
+        {MaxX, _} = lists:max(maps:keys(Grid)),
+        [to_char(grid_to_string(Grid, {X, 0}, {X+3, 5})) ||
+            X <- lists:seq(0, MaxX, 5)]
+    catch _:_ ->
+            error
+    end.
+
+grid_to_string(Grid, {X1, Y1}, {X2,Y2}) ->
+    lists:flatten(
+      lists:map(
+        fun(Y) ->
+                [ lists:map(
+                    fun(X) ->
+                            case maps:get({X, Y}, Grid, ".") of
+                                S when is_list(S) -> S;
+                                C when $0 =< C, C =< $9 -> [C];
+                                Other -> io_lib:format("~p", [Other])
+                            end
+                    end, lists:seq(X1, X2))
+                , "\n"]
+        end, lists:seq(Y1,Y2))).
+
+
+to_char(".##.\n#..#\n#..#\n####\n#..#\n#..#\n") -> $A;
+to_char("###.\n#..#\n###.\n#..#\n#..#\n###.\n") -> $B;
+to_char(".##.\n#..#\n#...\n#...\n#..#\n.##.\n") -> $C;
+to_char("####\n#...\n###.\n#...\n#...\n####\n") -> $E;
+to_char("####\n#...\n###.\n#...\n#...\n#...\n") -> $F;
+to_char(".##.\n#..#\n#...\n#.##\n#..#\n.###\n") -> $G;
+to_char("#..#\n#..#\n####\n#..#\n#..#\n#..#\n") -> $H;
+to_char(".###\n..#.\n..#.\n..#.\n..#.\n.###\n") -> $I;
+to_char("..##\n...#\n...#\n...#\n#..#\n.##.\n") -> $J;
+to_char("#..#\n#.#.\n##..\n#.#.\n#.#.\n#..#\n") -> $K;
+to_char("#...\n#...\n#...\n#...\n#...\n####\n") -> $L;
+to_char(".##.\n#..#\n#..#\n#..#\n#..#\n.##.\n") -> $O;
+to_char("###.\n#..#\n#..#\n###.\n#...\n#...\n") -> $P;
+to_char("###.\n#..#\n#..#\n###.\n#.#.\n#..#\n") -> $R;
+to_char(".###\n#...\n#...\n.##.\n...#\n###.\n") -> $S;
+to_char("#..#\n#..#\n#..#\n#..#\n#..#\n.##.\n") -> $U;
+to_char("#...\n#...\n.#.#\n..#.\n..#.\n..#.\n") -> $Y;
+to_char("####\n...#\n..#.\n.#..\n#...\n####\n") -> $Z.
 
 %% Solve ---------------------------------------------------------------
 solve(Mod) when is_atom(Mod) ->

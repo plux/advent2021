@@ -9,7 +9,9 @@ part1({Points, Folds}) ->
     length(fold(hd(Folds), Points)).
 
 part2({Points, Folds}) ->
-    aoc:draw_grid(lists:foldl(fun fold/2, Points, Folds)).
+    Grid = lists:foldl(fun fold/2, Points, Folds),
+    aoc:draw_grid(Grid),
+    aoc:ocr(Grid).
 
 fold({Dir, Pos}, Points) ->
     lists:usort(lists:map(fun({X, Y}) when Dir == $x, X > Pos -> {2*Pos - X, Y};
@@ -47,19 +49,12 @@ solve_test_() ->
 fold along y=7
 fold along x=5",
     [ ?_assertEqual(17, part1(parse(Input)))
-    , ?_assertEqual({ok,
+    , ?_assertEqual({error,
                      "#####\n"
                      "#...#\n"
                      "#...#\n"
                      "#...#\n"
                      "#####\n"
                     }, {part2(parse(Input)), ?capturedOutput})
-    , ?_assertEqual({790, ok}, ?solve())
-%% Part 2 output:
-%% ###...##..#..#.####.###..####...##..##.
-%% #..#.#..#.#..#....#.#..#.#.......#.#..#
-%% #..#.#....####...#..###..###.....#.#...
-%% ###..#.##.#..#..#...#..#.#.......#.#...
-%% #....#..#.#..#.#....#..#.#....#..#.#..#
-%% #.....###.#..#.####.###..#.....##...##.
+    , ?_assertEqual({790, "PGHZBFJC"}, ?solve())
     ].
