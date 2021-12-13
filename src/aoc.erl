@@ -52,6 +52,8 @@ grid(L) ->
     maps:from_list([{{X, Y}, C} || {Y, Line} <- enumerate(L),
                                    {X, C} <- enumerate(Line)]).
 
+draw_grid(L) when is_list(L) ->
+    draw_grid(maps:from_list([{{X, Y}, "#"} || {X, Y} <- L]));
 draw_grid(Grid) ->
     Xs = [X || {X, _} <- maps:keys(Grid)],
     Ys = [Y || {_, Y} <- maps:keys(Grid)],
