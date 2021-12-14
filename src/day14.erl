@@ -6,36 +6,42 @@ solve(Input) ->
     {part1(parse(Input)), part2(parse(Input))}.
 
 part1({Template, Rules}) ->
-    Result = calc(10, Template, Rules),
-    Counts = counter:count(Result),
-    {_, Max} = counter:max(Counts),
-    {_, Min} = counter:min(Counts),
-    Max - Min.
+    solve(10, pairs(Template, []), Rules).
 
-calc(0, Str, _Rules) ->
-    Str;
-calc(N, Str, Rules) ->
-    %% io:format("~p: ~s\n", [10-N, Str]),
-    calc(N-1, apply_rules(Str, Rules), Rules).
+part2({Template, Rules}) ->
+    solve(40, pairs(Template, []), Rules).
 
-apply_rules([], _) ->
+pairs([X], Acc) ->
+    counter:from_list([{[X], 1}|Acc]);
+pairs([A,B|Rest], Acc) ->
+    pairs([B|Rest], [{[A,B], 1}|Acc]).
+
+solve(0, Pairs, _Rules) ->
+    Counts = split_pairs(maps:to_list(Pairs), []),
+    {_, Max0} = counter:max(Counts),
+    {_, Min0} = counter:min(Counts),
+    (Max0 - Min0) div 2;
+solve(N, Pairs0, Rules) ->
+    Pairs = counter:from_list(apply_rules(maps:to_list(Pairs0), Rules)),
+    solve(N-1, Pairs, Rules).
+
+split_pairs([], Acc) ->
+    counter:from_list(Acc);
+split_pairs([{[A], Count} | Rest], Acc) ->
+    split_pairs(Rest, [{[A], Count} | Acc]);
+split_pairs([{[A,B], Count} | Rest], Acc) ->
+    split_pairs(Rest, [{[A], Count}, {[B], Count} | Acc]).
+
+apply_rules([], _Rules) ->
     [];
-apply_rules([X], _) ->
-    [X];
-apply_rules([A,B|Rest], Rules) ->
+apply_rules([{[A], Count} | Rest], Rules) ->
+    [{[A], Count} | apply_rules(Rest, Rules)];
+apply_rules([{[A,B], Count} | Rest], Rules) ->
     X = maps:get([A,B], Rules),
-    [A,X|apply_rules([B|Rest], Rules)].
-
-part2({Points, Folds}) ->
-    ok.
-
-chunks([]) ->
-    [];
-chunks([A,B|Rest]) ->
-    [[A,B]|chunks(Rest)].
+    [{[A,X], Count}, {[X,B], Count} | apply_rules(Rest, Rules)].
 
 parse(Input) ->
-    [Template|Lines] = ?lines(Input),
+    [Template | Lines] = ?lines(Input),
     Splitted = [?split(Line, " -> ") || Line <- Lines],
     Rules = maps:from_list([{From, To} || [From, [To]] <- Splitted]),
     {Template, Rules}.
@@ -61,12 +67,6 @@ BC -> B
 CC -> N
 CN -> C",
     [ ?_assertEqual(1588, part1(parse(Input)))
-    %% , ?_assertEqual({error,
-    %%                  "#####\n"
-    %%                  "#...#\n"
-    %%                  "#...#\n"
-    %%                  "#...#\n"
-    %%                  "#####\n"
-    %%                 }, {part2(parse(Input)), ?capturedOutput})
-    , ?_assertEqual({790, "PGHZBFJC"}, ?solve())
+    , ?_assertEqual(2188189693529, part2(parse(Input)))
+    , ?_assertEqual({4244, 4807056953866}, ?solve())
     ].
