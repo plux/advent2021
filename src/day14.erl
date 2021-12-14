@@ -6,39 +6,30 @@ solve(Input) ->
     {part1(parse(Input)), part2(parse(Input))}.
 
 part1({Template, Rules}) ->
-    solve(10, pairs(Template, []), Rules).
+    solve(10, init_pairs(Template, #{}), Rules).
 
 part2({Template, Rules}) ->
-    solve(40, pairs(Template, []), Rules).
+    solve(40, init_pairs(Template, #{}), Rules).
 
-pairs([X], Acc) ->
-    counter:from_list([{[X], 1}|Acc]);
-pairs([A,B|Rest], Acc) ->
-    pairs([B|Rest], [{[A,B], 1}|Acc]).
+init_pairs([X], Acc) ->
+    counter:incr(Acc, [X]);
+init_pairs([A,B|Rest], Acc) ->
+    init_pairs([B|Rest], counter:incr(Acc, [A,B])).
 
 solve(0, Pairs, _Rules) ->
-    Counts = split_pairs(maps:to_list(Pairs), []),
-    {_, Max0} = counter:max(Counts),
-    {_, Min0} = counter:min(Counts),
-    (Max0 - Min0) div 2;
+    Counts = counter:from_list([{A, N} || {[A|_], N} <- maps:to_list(Pairs)]),
+    {_, Max} = counter:max(Counts),
+    {_, Min} = counter:min(Counts),
+    Max - Min;
 solve(N, Pairs0, Rules) ->
-    Pairs = counter:from_list(apply_rules(maps:to_list(Pairs0), Rules)),
+    Pairs = maps:fold(fun([A], Count, Acc)->
+                              counter:incr(Acc, [A], Count);
+                         ([A,B], Count, Acc0) ->
+                              X = maps:get([A,B], Rules),
+                              Acc = counter:incr(Acc0, [A,X], Count),
+                              counter:incr(Acc, [X,B], Count)
+                      end, #{}, Pairs0),
     solve(N-1, Pairs, Rules).
-
-split_pairs([], Acc) ->
-    counter:from_list(Acc);
-split_pairs([{[A], Count} | Rest], Acc) ->
-    split_pairs(Rest, [{[A], Count} | Acc]);
-split_pairs([{[A,B], Count} | Rest], Acc) ->
-    split_pairs(Rest, [{[A], Count}, {[B], Count} | Acc]).
-
-apply_rules([], _Rules) ->
-    [];
-apply_rules([{[A], Count} | Rest], Rules) ->
-    [{[A], Count} | apply_rules(Rest, Rules)];
-apply_rules([{[A,B], Count} | Rest], Rules) ->
-    X = maps:get([A,B], Rules),
-    [{[A,X], Count}, {[X,B], Count} | apply_rules(Rest, Rules)].
 
 parse(Input) ->
     [Template | Lines] = ?lines(Input),
