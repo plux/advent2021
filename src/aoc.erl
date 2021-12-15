@@ -86,6 +86,9 @@ transpose([])     -> [];
 transpose([[]|_]) -> [];
 transpose(L)      -> [[H || [H|_] <- L]|transpose([T || [_|T] <- L])].
 
+steps(0, _, Acc) -> Acc;
+steps(N, F, Acc) -> steps(N-1, F, F(Acc)).
+
 ocr(L) when is_list(L) ->
     ocr(maps:from_list([{{X, Y}, "#"} || {X, Y} <- L]));
 ocr(Grid) ->
@@ -106,6 +109,7 @@ grid_to_string(Grid, {X1, Y1}, {X2,Y2}) ->
                             case maps:get({X, Y}, Grid, ".") of
                                 S when is_list(S) -> S;
                                 C when $0 =< C, C =< $9 -> [C];
+                                C when 1 =< C, C =< 9 -> [$0+C];
                                 Other -> io_lib:format("~p", [Other])
                             end
                     end, lists:seq(X1, X2))
