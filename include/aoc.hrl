@@ -26,3 +26,13 @@
 -define(se,  { 1,  1}).
 
 -define(manhattan(X, Y), abs(X) + abs(Y)).
+
+-define(memo(X, Fun),
+    case get(X) of
+        undefined ->
+            Res = Fun(),
+            put(X, Res),
+            Res;
+        Res ->
+            Res
+    end).

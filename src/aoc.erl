@@ -110,7 +110,7 @@ grid_to_string(Grid, {X1, Y1}, {X2,Y2}) ->
                                 S when is_list(S) -> S;
                                 C when $0 =< C, C =< $9 -> [C];
                                 C when 1 =< C, C =< 9 -> [$0+C];
-                                Other -> io_lib:format("~p", [Other])
+                                C -> io_lib:format("~s", [[C]])
                             end
                     end, lists:seq(X1, X2))
                 , "\n"]
